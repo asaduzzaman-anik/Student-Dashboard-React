@@ -19,7 +19,14 @@ function StudentList({ students, onDelete, children }) {
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {students.map((student) => (
             <ErrorBoundary key={student.id}>
-              <StudentCard student={student} onDelete={onDelete} />
+              <StudentCard
+                id={student.id}
+                name={student.name}
+                department={student.department}
+                cgpa={student.cgpa}
+                isActive={student.isActive}
+                onDelete={onDelete}
+              />
             </ErrorBoundary>
           ))}
         </div>

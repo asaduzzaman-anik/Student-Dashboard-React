@@ -15,9 +15,7 @@ function AlertBanner({ message, type = "success", onClose }) {
           ✓
         </div>
 
-        <p className="flex-1 text-sm font-medium leading-5">
-          {message}
-        </p>
+        <p className="flex-1 text-sm font-medium leading-5">{message}</p>
 
         <button
           onClick={onClose}

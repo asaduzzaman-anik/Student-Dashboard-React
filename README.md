@@ -8,8 +8,11 @@ A React + Vite assignment project that demonstrates components, JSX, props, even
 - Reusable `StudentCard` component rendered with `students.map`
 - Student props for name, department, CGPA, and active status
 - Conditional rendering with ternary operator, logical `&&`, IIFE, `if...else`, and `switch`
+- Batch status messages: `No Students Found`, `Small Batch`, and `Large Batch`
 - Controlled add-student form with validation and `preventDefault`
 - Delete event for removing a student from the list
+- Delete confirmation modal before removing a student
+- Toast notifications on successful add and delete actions
 - Component composition with `App`, `Navbar`, `StudentList`, and `StudentCard`
 - State stored in `App` and passed down through props
 - Error boundary fallback for an intentional `StudentCard` crash
@@ -30,9 +33,26 @@ npm run build
 ## Project Structure
 
 ```text
-src/
-  App.jsx
-  App.css
-  index.css
-  main.jsx
+student-dashboard/
+├── public/
+├── src/
+│   ├── assets/
+│   ├── components/
+│   │   ├── Navbar.jsx
+│   │   ├── StudentCard.jsx
+│   │   ├── StudentList.jsx
+│   │   ├── StudentForm.jsx
+│   │   ├── AlertBanner.jsx
+│   │   ├── DeleteConfirmModal.jsx
+│   │   ├── ErrorFallback.jsx
+│   │   └── ErrorBoundary.jsx
+│   ├── pages/
+│   │   └── Home.jsx
+│   ├── data/
+│   │   └── students.js
+│   ├── App.jsx
+│   ├── main.jsx
+│   └── index.css
+├── package.json
+└── README.md
 ```
