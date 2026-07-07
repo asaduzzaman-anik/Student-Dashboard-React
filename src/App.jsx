@@ -1,342 +1,170 @@
-import { Component, useMemo, useState } from 'react'
-import './App.css'
-
-const initialStudents = [
-  {
-    id: 1,
-    name: 'Rahim',
-    department: 'CSE',
-    cgpa: 3.75,
-    isActive: true,
-  },
-  {
-    id: 2,
-    name: 'Karim',
-    department: 'EEE',
-    cgpa: 3.42,
-    isActive: false,
-  },
-  {
-    id: 3,
-    name: 'Nusrat',
-    department: 'BBA',
-    cgpa: 3.91,
-    isActive: true,
-  },
-]
-
-class ErrorBoundary extends Component {
-  constructor(props) {
-    super(props)
-    this.state = { hasError: false }
-  }
-
-  static getDerivedStateFromError() {
-    return { hasError: true }
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <section className="error-boundary" role="alert">
-          <h2>Something went wrong.</h2>
-          <p>Please reload the application.</p>
-        </section>
-      )
-    }
-
-    return this.props.children
-  }
-}
-
-function Navbar({ totalStudents }) {
-  return (
-    <header className="navbar">
-      <h1>Student Dashboard</h1>
-      <p>Total Students: {totalStudents}</p>
-    </header>
-  )
-}
-
-function BatchSummary({ totalStudents }) {
-  let ifElseMessage
-
-  if (totalStudents === 0) {
-    ifElseMessage = 'No Students Found'
-  } else if (totalStudents === 1) {
-    ifElseMessage = 'Small Batch'
-  } else {
-    ifElseMessage = 'Large Batch'
-  }
-
-  let switchMessage
-
-  switch (true) {
-    case totalStudents === 0:
-      switchMessage = 'No Students Found'
-      break
-    case totalStudents === 1:
-      switchMessage = 'Small Batch'
-      break
-    default:
-      switchMessage = 'Large Batch'
-  }
-
-  const ternaryMessage =
-    totalStudents === 0
-      ? 'No Students Found'
-      : totalStudents === 1
-        ? 'Small Batch'
-        : 'Large Batch'
-
-  return (
-    <section className="summary" aria-label="Batch summary">
-      <article>
-        <span>If...else</span>
-        <strong>{ifElseMessage}</strong>
-      </article>
-      <article>
-        <span>Switch</span>
-        <strong>{switchMessage}</strong>
-      </article>
-      <article>
-        <span>Ternary</span>
-        <strong>{ternaryMessage}</strong>
-      </article>
-    </section>
-  )
-}
-
-function AddStudentForm({ onAddStudent }) {
-  const [formData, setFormData] = useState({
-    name: '',
-    department: '',
-    cgpa: '',
-  })
-  const [error, setError] = useState('')
-
-  function handleChange(event) {
-    const { name, value } = event.target
-    setFormData((currentData) => ({
-      ...currentData,
-      [name]: value,
-    }))
-  }
-
-  function handleSubmit(event) {
-    event.preventDefault()
-
-    const trimmedName = formData.name.trim()
-    const trimmedDepartment = formData.department.trim()
-    const cgpa = Number(formData.cgpa)
-
-    if (!trimmedName || !trimmedDepartment || !formData.cgpa) {
-      setError('Please fill in all fields before adding a student.')
-      return
-    }
-
-    if (Number.isNaN(cgpa) || cgpa < 0 || cgpa > 4) {
-      setError('CGPA must be a number between 0 and 4.')
-      return
-    }
-
-    onAddStudent({
-      name: trimmedName,
-      department: trimmedDepartment,
-      cgpa,
-      isActive: true,
-    })
-
-    setFormData({
-      name: '',
-      department: '',
-      cgpa: '',
-    })
-    setError('')
-  }
-
-  return (
-    <form className="student-form" onSubmit={handleSubmit}>
-      <div>
-        <label htmlFor="name">Student Name</label>
-        <input
-          id="name"
-          name="name"
-          type="text"
-          value={formData.name}
-          onChange={handleChange}
-          placeholder="Enter student name"
-        />
-      </div>
-
-      <div>
-        <label htmlFor="department">Department</label>
-        <input
-          id="department"
-          name="department"
-          type="text"
-          value={formData.department}
-          onChange={handleChange}
-          placeholder="CSE"
-        />
-      </div>
-
-      <div>
-        <label htmlFor="cgpa">CGPA</label>
-        <input
-          id="cgpa"
-          name="cgpa"
-          type="number"
-          min="0"
-          max="4"
-          step="0.01"
-          value={formData.cgpa}
-          onChange={handleChange}
-          placeholder="3.75"
-        />
-      </div>
-
-      {error && <p className="form-error">{error}</p>}
-
-      <button type="submit">Add Student</button>
-    </form>
-  )
-}
-
-function StudentCard({ student, onDeleteStudent, shouldCrash }) {
-  if (shouldCrash) {
-    throw new Error('Intentional StudentCard crash')
-  }
-
-  const { id, name, department, cgpa, isActive } = student
-
-  return (
-    <article className="student-card">
-      <div className="card-header">
-        <h3>{name}</h3>
-        <span className={isActive ? 'status active' : 'status inactive'}>
-          {isActive ? 'Active' : 'Inactive'}
-        </span>
-      </div>
-
-      {isActive && <p className="active-note">Currently enrolled</p>}
-
-      {(() => {
-        const gradeLabel = cgpa >= 3.75 ? 'Excellent' : cgpa >= 3 ? 'Good' : 'Needs Support'
-
-        return <p className="grade-label">{gradeLabel}</p>
-      })()}
-
-      <dl>
-        <div>
-          <dt>Department</dt>
-          <dd>{department}</dd>
-        </div>
-        <div>
-          <dt>CGPA</dt>
-          <dd>{cgpa.toFixed(2)}</dd>
-        </div>
-      </dl>
-
-      <button type="button" className="delete-button" onClick={() => onDeleteStudent(id)}>
-        Delete
-      </button>
-    </article>
-  )
-}
-
-function StudentList({ children }) {
-  return <section className="student-list">{children}</section>
-}
+import { useState } from "react";
+import Navbar from "./components/Navbar";
+import StudentForm from "./components/StudentForm";
+import StudentList from "./components/StudentList";
+import AlertBanner from "./components/AlertBanner";
+import DeleteConfirmModal from "./components/DeleteConfirmModal";
+import { initialStudents } from "./data/students";
 
 function App() {
-  const [students, setStudents] = useState(initialStudents)
-  const [crashCardId, setCrashCardId] = useState(null)
+  const [students, setStudents] = useState(initialStudents);
 
-  const totalStudents = students.length
-  const highestCgpa = useMemo(() => {
-    if (students.length === 0) {
-      return '0.00'
-    }
+  const [alert, setAlert] = useState({
+    message: "",
+    type: "success",
+  });
 
-    return Math.max(...students.map((student) => student.cgpa)).toFixed(2)
-  }, [students])
+  const [deleteModal, setDeleteModal] = useState({
+    open: false,
+    student: null,
+  });
 
-  function handleAddStudent(newStudent) {
-    setStudents((currentStudents) => [
-      ...currentStudents,
-      {
-        ...newStudent,
-        id: Date.now(),
+  const addStudent = (student) => {
+    setStudents((prev) => [...prev, student]);
+
+    setAlert({
+      message: `${student.name} has been added successfully.`,
+      type: "success",
+    });
+
+    setTimeout(() => {
+      setAlert({
+        message: "",
+        type: "success",
+      });
+    }, 3000);
+  };
+
+  const deleteStudent = (id, name) => {
+    setDeleteModal({
+      open: true,
+      student: {
+        id,
+        name,
       },
-    ])
+    });
+  };
+
+  const confirmDeleteStudent = () => {
+    setStudents((prev) =>
+      prev.filter((student) => student.id !== deleteModal.student.id),
+    );
+
+    setAlert({
+      message: `${deleteModal.student.name} has been deleted successfully.`,
+      type: "success",
+    });
+
+    setDeleteModal({
+      open: false,
+      student: null,
+    });
+
+    setTimeout(() => {
+      setAlert({
+        message: "",
+        type: "success",
+      });
+    }, 3000);
+  };
+
+  const cancelDelete = () => {
+    setDeleteModal({
+      open: false,
+      student: null,
+    });
+  };
+
+  // if...else
+  let batchMessage;
+
+  if (students.length === 0) {
+    batchMessage = "No Students Found";
+  } else if (students.length <= 5) {
+    batchMessage = "Small Batch";
+  } else {
+    batchMessage = "Large Batch";
   }
 
-  function handleDeleteStudent(studentId) {
-    setStudents((currentStudents) =>
-      currentStudents.filter((student) => student.id !== studentId),
-    )
-  }
+  // switch statement
+  const getBatchMessageBySwitch = () => {
+    switch (true) {
+      case students.length === 0:
+        return "No Students Found";
+      case students.length <= 5:
+        return "Small Batch";
+      default:
+        return "Large Batch";
+    }
+  };
 
   return (
-    <main className="dashboard">
-      <Navbar totalStudents={totalStudents} />
+    <div className="min-h-screen bg-slate-50">
+      <Navbar totalStudents={students.length} />
 
-      <section className="overview" aria-label="Dashboard overview">
-        <article>
-          <span>Active</span>
-          <strong>{students.filter((student) => student.isActive).length}</strong>
-        </article>
-        <article>
-          <span>Inactive</span>
-          <strong>{students.filter((student) => !student.isActive).length}</strong>
-        </article>
-        <article>
-          <span>Highest CGPA</span>
-          <strong>{highestCgpa}</strong>
-        </article>
-      </section>
+      <main className="mx-auto max-w-6xl px-6 py-8">
+        <AlertBanner
+          message={alert.message}
+          type={alert.type}
+          onClose={() =>
+            setAlert({
+              message: "",
+              type: "success",
+            })
+          }
+        />
 
-      <BatchSummary totalStudents={totalStudents} />
+        <div className="mb-6 grid gap-4 md:grid-cols-3">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-sm text-slate-500">Total Students</p>
 
-      <section className="workspace">
-        <AddStudentForm onAddStudent={handleAddStudent} />
-
-        <ErrorBoundary>
-          <div className="list-heading">
-            <div>
-              <h2>Students</h2>
-              <p>{totalStudents === 0 ? 'No Students Found' : 'Manage current student records'}</p>
-            </div>
-            {students.length > 0 && (
-              <button
-                type="button"
-                className="crash-button"
-                onClick={() => setCrashCardId(students[0].id)}
-              >
-                Crash First Card
-              </button>
-            )}
+            <h2 className="mt-2 text-3xl font-bold">{students.length}</h2>
           </div>
 
-          {students.length === 0 ? (
-            <p className="empty-message">No Students Found</p>
-          ) : (
-            <StudentList>
-              {students.map((student) => (
-                <StudentCard
-                  key={student.id}
-                  student={student}
-                  onDeleteStudent={handleDeleteStudent}
-                  shouldCrash={crashCardId === student.id}
-                />
-              ))}
-            </StudentList>
-          )}
-        </ErrorBoundary>
-      </section>
-    </main>
-  )
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-sm text-slate-500">Batch Status</p>
+
+            <h2 className="mt-2 text-2xl font-bold">{batchMessage}</h2>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-sm text-slate-500">Switch Result</p>
+
+            <h2 className="mt-2 text-2xl font-bold">
+              {getBatchMessageBySwitch()}
+            </h2>
+          </div>
+        </div>
+
+        <div className="mb-8">
+          <StudentForm onAddStudent={addStudent} />
+        </div>
+
+        <StudentList students={students} onDelete={deleteStudent}>
+          <div className="mb-5 flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold">Student List</h2>
+
+              <p className="text-sm text-slate-500">
+                {students.length === 0
+                  ? "No records available"
+                  : students.length <= 5
+                    ? "Showing a small batch of students"
+                    : "Showing a large batch of students"}
+              </p>
+            </div>
+          </div>
+        </StudentList>
+      </main>
+
+      <DeleteConfirmModal
+        isOpen={deleteModal.open}
+        studentName={deleteModal.student?.name}
+        onCancel={cancelDelete}
+        onConfirm={confirmDeleteStudent}
+      />
+    </div>
+  );
 }
 
-export default App
+export default App;
